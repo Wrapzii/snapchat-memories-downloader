@@ -6,7 +6,67 @@ Everything i did here was vibe coded, i wanted it do be done quickly and it work
 I think it's even better than the original, since I am adding metadata to the files, which snapchat doesn't
 Feel free to contribute 👍🙏
 
-# How to run
+## Available Versions
+- **PowerShell Scripts** (`.ps1`) - **Recommended for Windows users** - No Python required!
+- **Python Scripts** (`.py`) - For Mac/Linux users or those who prefer Python
+
+# Quick Start (Windows - PowerShell)
+
+## Prerequisites
+1. **PowerShell** - Already included in Windows
+2. **ExifTool** (optional but recommended for metadata)
+   - Download from [https://exiftool.org/](https://exiftool.org/)
+   - Extract and rename `exiftool(-k).exe` to `exiftool.exe`
+   - Place in same folder as scripts or add to PATH
+
+## How to Run
+
+### 1. Run the installer (checks dependencies)
+```powershell
+installer.bat
+```
+
+### 2. Request your Snapchat data
+- Go to [https://accounts.snapchat.com](https://accounts.snapchat.com)
+- Click on `My Data`
+- Select `Export your Memories` and click `Request Only Memories`
+- Select `All Time`
+- Confirm email and click `Submit`
+- After some time you'll get an email with the download link. Follow the instructions and download the data
+
+### 3. Place the `memories_history.html` file
+Put the downloaded `memories_history.html` file in the same folder as the PowerShell scripts
+
+### 4. Run the download script
+```powershell
+powershell -ExecutionPolicy Bypass -File snapchat-downloader.ps1
+```
+
+The script downloads all your memories and creates:
+- `./snapchat_memories/` - Folder where all your memories are stored with correct dates
+- `downloaded_files.json` - Information about downloaded files
+- `download_errors.json` - Files that had download errors
+
+### 5. (Optional) Add GPS location metadata
+```powershell
+powershell -ExecutionPolicy Bypass -File metadata.ps1
+```
+
+### 6. (Optional) Delete duplicates in extracted folders
+```powershell
+powershell -ExecutionPolicy Bypass -File delete-dupes.ps1
+```
+
+### 7. Retry failed downloads
+- Delete the `download_errors.json` file
+- Run the download script again
+- If files still fail, try visiting the download link in your browser (may be a Snapchat issue)
+
+---
+
+# Python Version (Mac/Linux)
+
+## How to run
 1. create a python venv
 ```bash
 python3 -m venv .venv
@@ -81,8 +141,63 @@ mdimport -r snapchat_memories/
 ```
 
 
-12. correct the FileCreatedTimestamp to match the Created Timestamp
+12. correct the FileCreatedTimestamp to match the Created Timestamp (Mac/Linux only)
 ```bash
 exiftool "-FileCreateDate<CreateDate" "-FileModifyDate<CreateDate" -ext mp4 -r snapchat_memories/
 exiftool "-FileCreateDate<CreateDate" "-FileModifyDate<CreateDate" -ext jpg -r snapchat_memories/
 ```
+
+---
+
+## Script Parameters
+
+### PowerShell Scripts
+
+**snapchat-downloader.ps1**
+```powershell
+# Run with custom settings
+powershell -ExecutionPolicy Bypass -File snapchat-downloader.ps1 -MaxWorkers 10 -UseExifTool $true
+
+# Test mode (download only a few files)
+powershell -ExecutionPolicy Bypass -File snapchat-downloader.ps1 -TestMode $true -TestFilesPerThread 3
+```
+
+**metadata.ps1**
+```powershell
+# Run without exiftool (only creates JSON)
+powershell -ExecutionPolicy Bypass -File metadata.ps1 -UseExifTool $false
+```
+
+**delete-dupes.ps1**
+```powershell
+# Dry run (preview only)
+powershell -ExecutionPolicy Bypass -File delete-dupes.ps1 -DryRun $true
+
+# Actually delete duplicates
+powershell -ExecutionPolicy Bypass -File delete-dupes.ps1 -DryRun $false
+```
+
+## Troubleshooting
+
+### Windows PowerShell Execution Policy
+If you get an error about execution policy, run:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+Or always use the `-ExecutionPolicy Bypass` flag when running scripts.
+
+### ExifTool Not Found
+- Make sure `exiftool.exe` is in the same folder as the scripts, or
+- Add the folder containing `exiftool.exe` to your system PATH, or
+- Place `exiftool.exe` in `C:\Windows\System32`
+
+## Features
+- ✅ **No Python required** (PowerShell version)
+- ✅ Parallel downloads (configurable workers)
+- ✅ Automatic metadata writing (dates, GPS)
+- ✅ ZIP extraction with metadata for all layers
+- ✅ Progress tracking and resume capability
+- ✅ Error logging and retry support
+- ✅ Duplicate detection and removal
+- ✅ Works on Windows without any additional software (except ExifTool for metadata)
