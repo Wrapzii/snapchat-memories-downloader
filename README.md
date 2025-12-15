@@ -1,12 +1,106 @@
 # Snapchat Memories Downloader
 Since snapchat wants you to pay for more than 5gb of snapchat memories, I made a script to download all your memories since the version snapchat provided has a bug where it says 100% is downloaded but in reality it didn't download anything (at least in my case)
 
+## 🚀 Quick Start for Windows Users
+
+**No Python needed! Just 3 easy steps:**
+
+1. **Download ExifTool** (optional but recommended)
+   - Get it from [https://exiftool.org/](https://exiftool.org/)
+   - Rename `exiftool(-k).exe` to `exiftool.exe`
+   - Put it in the same folder as the scripts
+
+2. **Get your Snapchat data**
+   - Go to [https://accounts.snapchat.com](https://accounts.snapchat.com) → My Data
+   - Export your Memories → Request Only Memories → All Time
+   - Download the `memories_history.html` file
+   - Put it in the same folder as the scripts
+
+3. **Double-click `download.bat`** and you're done! 🎉
+
+---
+
 ## Disclaimer
 Everything i did here was vibe coded, i wanted it do be done quickly and it worked for me.
 I think it's even better than the original, since I am adding metadata to the files, which snapchat doesn't
 Feel free to contribute 👍🙏
 
-# How to run
+## Available Versions
+- **PowerShell Scripts** (`.ps1`) - **Recommended for Windows users** - No Python required!
+- **Python Scripts** (`.py`) - For Mac/Linux users or those who prefer Python
+
+# Quick Start (Windows - PowerShell)
+
+## Prerequisites
+1. **PowerShell** - Already included in Windows
+2. **ExifTool** (optional but recommended for metadata)
+   - Download from [https://exiftool.org/](https://exiftool.org/)
+   - Extract and rename `exiftool(-k).exe` to `exiftool.exe`
+   - Place in same folder as scripts or add to PATH
+
+## How to Run
+
+### 1. Run the installer (checks dependencies)
+```powershell
+installer.bat
+```
+
+### 2. Request your Snapchat data
+- Go to [https://accounts.snapchat.com](https://accounts.snapchat.com)
+- Click on `My Data`
+- Select `Export your Memories` and click `Request Only Memories`
+- Select `All Time`
+- Confirm email and click `Submit`
+- After some time you'll get an email with the download link. Follow the instructions and download the data
+
+### 3. Place the `memories_history.html` file
+Put the downloaded `memories_history.html` file in the same folder as the PowerShell scripts
+
+### 4. Run the download script
+
+**Easy way (double-click):**
+- Double-click `download.bat`
+
+**Or using PowerShell:**
+```powershell
+powershell -ExecutionPolicy Bypass -File snapchat-downloader.ps1
+```
+
+The script downloads all your memories and creates:
+- `./snapchat_memories/` - Folder where all your memories are stored with correct dates
+- `downloaded_files.json` - Information about downloaded files
+- `download_errors.json` - Files that had download errors
+
+### 5. (Optional) Add GPS location metadata
+
+**Easy way (double-click):**
+- Double-click `add-metadata.bat`
+
+**Or using PowerShell:**
+```powershell
+powershell -ExecutionPolicy Bypass -File metadata.ps1
+```
+
+### 6. (Optional) Delete duplicates in extracted folders
+
+**Easy way (double-click):**
+- Double-click `remove-duplicates.bat`
+
+**Or using PowerShell:**
+```powershell
+powershell -ExecutionPolicy Bypass -File delete-dupes.ps1
+```
+
+### 7. Retry failed downloads
+- Delete the `download_errors.json` file
+- Run the download script again
+- If files still fail, try visiting the download link in your browser (may be a Snapchat issue)
+
+---
+
+# Python Version (Mac/Linux)
+
+## How to run
 1. create a python venv
 ```bash
 python3 -m venv .venv
@@ -81,8 +175,81 @@ mdimport -r snapchat_memories/
 ```
 
 
-12. correct the FileCreatedTimestamp to match the Created Timestamp
+12. correct the FileCreatedTimestamp to match the Created Timestamp (Mac/Linux only)
 ```bash
 exiftool "-FileCreateDate<CreateDate" "-FileModifyDate<CreateDate" -ext mp4 -r snapchat_memories/
 exiftool "-FileCreateDate<CreateDate" "-FileModifyDate<CreateDate" -ext jpg -r snapchat_memories/
 ```
+
+---
+
+## Script Parameters
+
+### PowerShell Scripts
+
+**snapchat-downloader.ps1**
+```powershell
+# Run with custom settings
+powershell -ExecutionPolicy Bypass -File snapchat-downloader.ps1 -MaxWorkers 10 -UseExifTool $true
+
+# Test mode (download only a few files)
+powershell -ExecutionPolicy Bypass -File snapchat-downloader.ps1 -TestMode $true -TestFilesPerThread 3
+```
+
+**metadata.ps1**
+```powershell
+# Run without exiftool (only creates JSON)
+powershell -ExecutionPolicy Bypass -File metadata.ps1 -UseExifTool $false
+```
+
+**delete-dupes.ps1**
+```powershell
+# Dry run (preview only)
+powershell -ExecutionPolicy Bypass -File delete-dupes.ps1 -DryRun $true
+
+# Actually delete duplicates
+powershell -ExecutionPolicy Bypass -File delete-dupes.ps1 -DryRun $false
+```
+
+## Troubleshooting
+
+### Windows PowerShell Execution Policy
+If you get an error about execution policy, run:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+Or always use the `-ExecutionPolicy Bypass` flag when running scripts.
+
+### ExifTool Not Found
+- Make sure `exiftool.exe` is in the same folder as the scripts, or
+- Add the folder containing `exiftool.exe` to your system PATH, or
+- Place `exiftool.exe` in `C:\Windows\System32`
+
+## Features
+- ✅ **No Python required** (PowerShell version for Windows)
+- ✅ **Simple batch files** - Just double-click to run!
+- ✅ Parallel downloads (configurable workers)
+- ✅ Automatic metadata writing (dates, GPS)
+- ✅ ZIP extraction with metadata for all layers
+- ✅ Progress tracking and resume capability
+- ✅ Error logging and retry support
+- ✅ Duplicate detection and removal
+- ✅ Works on Windows without any additional software (except ExifTool for metadata)
+
+## File Overview
+
+### Windows (PowerShell/Batch)
+- **installer.bat** - Checks dependencies and provides setup instructions
+- **download.bat** - Simple wrapper to start downloading (just double-click!)
+- **add-metadata.bat** - Adds GPS location metadata (just double-click!)
+- **remove-duplicates.bat** - Preview and remove duplicate files (just double-click!)
+- **snapchat-downloader.ps1** - Main PowerShell download script
+- **metadata.ps1** - PowerShell GPS metadata script
+- **delete-dupes.ps1** - PowerShell duplicate removal script
+
+### Mac/Linux (Python)
+- **installer.sh** - Installs Python dependencies
+- **snapchat-downloader.py** - Main Python download script
+- **metadata.py** - Python GPS metadata script
+- **delete-dupes.py** - Python duplicate removal script
