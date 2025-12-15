@@ -361,12 +361,6 @@ function Get-MemoryFile {
     
     $uniqueId = Get-UniqueIdFromUrl -url $url
     
-    # Skip if already downloaded
-    if ($downloadedFiles.ContainsKey($uniqueId)) {
-        Write-Host "[SKIP] $uniqueId already downloaded" -ForegroundColor DarkGray
-        return @{ UniqueId = $uniqueId; Status = 'skipped' }
-    }
-    
     try {
         $headers = @{
             'User-Agent' = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
@@ -415,7 +409,7 @@ function Get-MemoryFile {
         }
         
         Write-Host "[OK] $filename downloaded$(if ($metadataWritten) { ' (metadata written)' })" -ForegroundColor Green
-        return @{ UniqueId = $uniqueId; Status = 'downloaded' }
+        return @{ UniqueId = $uniqueId; Status = 'downloaded'; FileName = $filename; Url = $url; Date = $dateStr; ContentType = $contentType; MetadataWritten = $metadataWritten }
     }
     catch {
         Write-Host "[ERROR] Download failed for $uniqueId (Index $index): $_" -ForegroundColor Red
@@ -463,24 +457,36 @@ if ($TestMode) {
     Write-Host "`n*** TEST MODE ACTIVE: Only downloading $($downloadTasks.Count) files ($TestFilesPerThread per thread) ***`n" -ForegroundColor Yellow
 }
 
+# Filter out already downloaded files
+$tasksToDownload = @()
+foreach ($task in $downloadTasks) {
+    $uniqueId = Get-UniqueIdFromUrl -url $task.Url
+    if (-not $downloadedFiles.ContainsKey($uniqueId)) {
+        $tasksToDownload += $task
+    }
+}
+
+$skippedBeforeStart = $downloadTasks.Count - $tasksToDownload.Count
+
 # Statistics
 Write-Host "`nAlready downloaded: $($downloadedFiles.Count) files" -ForegroundColor Cyan
+Write-Host "Skipping (already exists): $skippedBeforeStart files" -ForegroundColor Yellow
 Write-Host "Failed downloads: $($errorLog.Count) files" -ForegroundColor Cyan
-Write-Host "To process: $($downloadTasks.Count) files`n" -ForegroundColor Cyan
+Write-Host "To download: $($tasksToDownload.Count) files`n" -ForegroundColor Cyan
 
 # Download files with parallel processing
 $completedCount = 0
 $downloadedCount = 0
-$skippedCount = 0
+$skippedCount = $skippedBeforeStart
 $errorCount = 0
-$totalCount = $downloadTasks.Count
+$totalCount = $tasksToDownload.Count
 
 # Use runspaces for parallel downloads
 $runspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxWorkers)
 $runspacePool.Open()
 $jobs = @()
 
-foreach ($task in $downloadTasks) {
+foreach ($task in $tasksToDownload) {
     $powershell = [powershell]::Create()
     $powershell.RunspacePool = $runspacePool
     
@@ -520,14 +526,13 @@ foreach ($job in $jobs) {
         # Update downloaded files
         $downloadedFiles[$result.UniqueId] = @{
             filename = $result.FileName
+            url = $result.Url
+            date = $result.Date
             content_type = $result.ContentType
             metadata_written = $result.MetadataWritten
             timestamp = (Get-Date).ToString('o')
         }
         Save-Progress
-    }
-    elseif ($result.Status -eq 'skipped') {
-        $skippedCount++
     }
     elseif ($result.Status -eq 'error') {
         $errorCount++
@@ -535,7 +540,7 @@ foreach ($job in $jobs) {
     
     # Progress display
     if (($completedCount % 10) -eq 0 -or $completedCount -eq $totalCount) {
-        Write-Host "`n[PROGRESS] $completedCount/$totalCount files processed (Downloaded: $downloadedCount, Skipped: $skippedCount, Errors: $errorCount)`n" -ForegroundColor Cyan
+        Write-Host "`n[PROGRESS] $completedCount/$totalCount files processed (Downloaded: $downloadedCount, Skipped (before): $skippedCount, Errors: $errorCount)`n" -ForegroundColor Cyan
     }
     
     $job.Pipe.Dispose()
@@ -549,9 +554,9 @@ Save-Progress
 
 # Summary
 Write-Host "`n=== Download Summary ===" -ForegroundColor Cyan
-Write-Host "Total processed: $($downloadTasks.Count) files"
+Write-Host "Total tasks: $($downloadTasks.Count) files"
 Write-Host "Newly downloaded: $downloadedCount files" -ForegroundColor Green
-Write-Host "Skipped (already exists): $skippedCount files" -ForegroundColor Yellow
+Write-Host "Skipped (already downloaded): $skippedCount files" -ForegroundColor Yellow
 Write-Host "Errors: $errorCount files" -ForegroundColor Red
 Write-Host "Total successful: $($downloadedFiles.Count) files" -ForegroundColor Green
 

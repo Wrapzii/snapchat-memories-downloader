@@ -1,6 +1,25 @@
 # Snapchat Memories Downloader
 Since snapchat wants you to pay for more than 5gb of snapchat memories, I made a script to download all your memories since the version snapchat provided has a bug where it says 100% is downloaded but in reality it didn't download anything (at least in my case)
 
+## 🚀 Quick Start for Windows Users
+
+**No Python needed! Just 3 easy steps:**
+
+1. **Download ExifTool** (optional but recommended)
+   - Get it from [https://exiftool.org/](https://exiftool.org/)
+   - Rename `exiftool(-k).exe` to `exiftool.exe`
+   - Put it in the same folder as the scripts
+
+2. **Get your Snapchat data**
+   - Go to [https://accounts.snapchat.com](https://accounts.snapchat.com) → My Data
+   - Export your Memories → Request Only Memories → All Time
+   - Download the `memories_history.html` file
+   - Put it in the same folder as the scripts
+
+3. **Double-click `download.bat`** and you're done! 🎉
+
+---
+
 ## Disclaimer
 Everything i did here was vibe coded, i wanted it do be done quickly and it worked for me.
 I think it's even better than the original, since I am adding metadata to the files, which snapchat doesn't

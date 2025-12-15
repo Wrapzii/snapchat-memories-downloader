@@ -63,10 +63,13 @@ function Find-DuplicatesInFolder {
             $primary = $null
             $toDelete = @()
             
+            # Escape the folder UUID for regex matching
+            $escapedFolderUuid = [regex]::Escape($folderUuid)
+            
             foreach ($filepath in $filepaths) {
                 $filename = Split-Path $filepath -Leaf
                 # Check if filename starts with folder UUID
-                if ($filename -match "^$folderUuid") {
+                if ($filename -match "^$escapedFolderUuid") {
                     $primary = $filepath
                 }
                 else {
