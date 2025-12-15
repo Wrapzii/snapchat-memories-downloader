@@ -69,8 +69,8 @@ function Get-LocationsFromHtml {
     $locations = @()
     
     # Pattern for coordinates: "Latitude, Longitude: 48.26275, 13.296288"
-    # Updated pattern to properly handle all decimal number formats
-    $coordPattern = 'Latitude,\s*Longitude:\s*([+-]?\d*\.?\d+),\s*([+-]?\d*\.?\d+)'
+    # Pattern ensures at least one digit is present, with optional decimal part
+    $coordPattern = 'Latitude,\s*Longitude:\s*([+-]?\d+(?:\.\d+)?),\s*([+-]?\d+(?:\.\d+)?)'
     $matches = [regex]::Matches($html, $coordPattern)
     
     foreach ($match in $matches) {
