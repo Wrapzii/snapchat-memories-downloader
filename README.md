@@ -38,6 +38,11 @@ installer.bat
 Put the downloaded `memories_history.html` file in the same folder as the PowerShell scripts
 
 ### 4. Run the download script
+
+**Easy way (double-click):**
+- Double-click `download.bat`
+
+**Or using PowerShell:**
 ```powershell
 powershell -ExecutionPolicy Bypass -File snapchat-downloader.ps1
 ```
@@ -48,11 +53,21 @@ The script downloads all your memories and creates:
 - `download_errors.json` - Files that had download errors
 
 ### 5. (Optional) Add GPS location metadata
+
+**Easy way (double-click):**
+- Double-click `add-metadata.bat`
+
+**Or using PowerShell:**
 ```powershell
 powershell -ExecutionPolicy Bypass -File metadata.ps1
 ```
 
 ### 6. (Optional) Delete duplicates in extracted folders
+
+**Easy way (double-click):**
+- Double-click `remove-duplicates.bat`
+
+**Or using PowerShell:**
 ```powershell
 powershell -ExecutionPolicy Bypass -File delete-dupes.ps1
 ```
@@ -193,7 +208,8 @@ Or always use the `-ExecutionPolicy Bypass` flag when running scripts.
 - Place `exiftool.exe` in `C:\Windows\System32`
 
 ## Features
-- ✅ **No Python required** (PowerShell version)
+- ✅ **No Python required** (PowerShell version for Windows)
+- ✅ **Simple batch files** - Just double-click to run!
 - ✅ Parallel downloads (configurable workers)
 - ✅ Automatic metadata writing (dates, GPS)
 - ✅ ZIP extraction with metadata for all layers
@@ -201,3 +217,20 @@ Or always use the `-ExecutionPolicy Bypass` flag when running scripts.
 - ✅ Error logging and retry support
 - ✅ Duplicate detection and removal
 - ✅ Works on Windows without any additional software (except ExifTool for metadata)
+
+## File Overview
+
+### Windows (PowerShell/Batch)
+- **installer.bat** - Checks dependencies and provides setup instructions
+- **download.bat** - Simple wrapper to start downloading (just double-click!)
+- **add-metadata.bat** - Adds GPS location metadata (just double-click!)
+- **remove-duplicates.bat** - Preview and remove duplicate files (just double-click!)
+- **snapchat-downloader.ps1** - Main PowerShell download script
+- **metadata.ps1** - PowerShell GPS metadata script
+- **delete-dupes.ps1** - PowerShell duplicate removal script
+
+### Mac/Linux (Python)
+- **installer.sh** - Installs Python dependencies
+- **snapchat-downloader.py** - Main Python download script
+- **metadata.py** - Python GPS metadata script
+- **delete-dupes.py** - Python duplicate removal script
